@@ -6,6 +6,8 @@
 #include "PSGlib.h"
 #include "gfx.h"
 
+const unsigned char base_tile_indexes[] = { 2, 8, 14, 20, 26 };
+
 void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsigned char line_incr) {
 	SMS_addSprite(x, y, base_tile);
 	SMS_addSprite(x + 8, y, base_tile + 2);
@@ -21,6 +23,7 @@ void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsign
 void main(void) {
 	unsigned char x = 0;
 	unsigned char joy = 0;
+	int tilt = 0;
 	
 	SMS_useFirstHalfTilesforSprites(true);
 	SMS_setSpriteMode(SPRITEMODE_TALL);
@@ -34,11 +37,14 @@ void main(void) {
 		joy = SMS_getKeysStatus();
 		
 		if (joy & PORT_A_KEY_LEFT) {
-			x--;
-		}
-		
-		if (joy & PORT_A_KEY_RIGHT) {
-			x++;
+			if (x) x -= 2;
+			if (tilt > -(2 << 2) + 1) tilt--;
+		} else if (joy & PORT_A_KEY_RIGHT) {
+			if (x < (256 - 24)) x += 2;
+			if (tilt < (2 << 2) - 1) tilt++;
+		} else {
+			if (tilt < 0) tilt++;
+			if (tilt > 0) tilt--;
 		}
 		
 		SMS_initSprites();
@@ -47,7 +53,7 @@ void main(void) {
 		draw_ship(8, 40, 8, 30);
 		draw_ship(8, 72, 14, 30);
 
-		draw_ship(x, 160, 14, 30);
+		draw_ship(x, 160, base_tile_indexes[(tilt + (2 << 2)) >> 2], 30);
 
 		SMS_finalizeSprites();
 
