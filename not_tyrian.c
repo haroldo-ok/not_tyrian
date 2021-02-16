@@ -2,8 +2,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include "SMSlib/src/SMSlib.h"
-#include "PSGlib/src/PSGlib.h"
+#include "SMSlib.h"
+#include "PSGlib.h"
 #include "gfx.h"
 
 void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsigned char line_incr) {
