@@ -19,6 +19,9 @@ void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsign
 }
 
 void main(void) {
+	unsigned char x = 0;
+	unsigned char joy = 0;
+	
 	SMS_useFirstHalfTilesforSprites(true);
 	SMS_setSpriteMode(SPRITEMODE_TALL);
 
@@ -26,13 +29,25 @@ void main(void) {
 	SMS_loadPSGaidencompressedTiles(player__tiles__psgcompr, 2);
 	SMS_setClippingWindow(0, 0, 255, 192);
 	SMS_displayOn();
-
+	
 	while (true) {
+		joy = SMS_getKeysStatus();
+		
+		if (joy & PORT_A_KEY_LEFT) {
+			x--;
+		}
+		
+		if (joy & PORT_A_KEY_RIGHT) {
+			x++;
+		}
+		
 		SMS_initSprites();
 
 		draw_ship(8, 8, 2, 30);
 		draw_ship(8, 40, 8, 30);
 		draw_ship(8, 72, 14, 30);
+
+		draw_ship(x, 160, 14, 30);
 
 		SMS_finalizeSprites();
 
