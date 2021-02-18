@@ -1,4 +1,4 @@
-D:\Util\bmp2tile-0.5\BMP2Tile.exe gfx\png\player.png -noremovedupes -8x16 -savetiles "gfx\player (tiles).psgcompr"
+D:\Util\bmp2tile-0.5\BMP2Tile.exe gfx\png\player.png -noremovedupes -8x16 -palsms -fullpalette -savetiles "gfx\player (tiles).psgcompr" -savepalette "gfx\player (palette).bin"
 D:\Util\bmp2tile-0.5\BMP2Tile.exe gfx\png\u_fighter.png -noremovedupes -8x16 -savetiles "gfx\u_fighter (tiles).psgcompr"
 D:\Util\bmp2tile-0.5\BMP2Tile.exe gfx\png\enemy.png -noremovedupes -8x16 -savetiles "gfx\enemy (tiles).psgcompr"
 folder2c gfx gfx
