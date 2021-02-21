@@ -23,6 +23,7 @@ void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsign
 }
 
 void main(void) {
+	unsigned char y = 160;
 	unsigned char x = 0;
 	unsigned char joy = 0;
 	int tilt = 0;
@@ -54,16 +55,22 @@ void main(void) {
 			if (tilt > 0) tilt--;
 		}
 		
+		if (joy & PORT_A_KEY_UP) {
+			if (y) y -= 2;
+		} else if (joy & PORT_A_KEY_DOWN) {
+			if (y < (192 - 32)) y += 2;
+		}
+		
 		uship_frame++;
 		enemy_frame++;
 		if ((enemy_frame >> 2) > 8) enemy_frame = 0;
 		
 		SMS_initSprites();
 
+		draw_ship(x, y, base_tile_indexes[(tilt + (2 << 2)) >> 2], 30);
+
 		draw_ship(48, 8, uship_tile_indexes[(uship_frame >> 2) & 0x07], 48);
 		draw_ship(256 - 48 - 24, 8, enemy_tile_indexes[(enemy_frame >> 2)], 30);
-
-		draw_ship(x, 160, base_tile_indexes[(tilt + (2 << 2)) >> 2], 30);
 
 		SMS_finalizeSprites();
 
@@ -74,6 +81,6 @@ void main(void) {
 }
 
 SMS_EMBED_SEGA_ROM_HEADER(9999,0); // code 9999 hopefully free, here this means 'homebrew'
-SMS_EMBED_SDSC_HEADER(0,1, 2016,3,20, "Haroldo-OK\\2016", "Not Tyrian",
+SMS_EMBED_SDSC_HEADER(0,2, 2021,2,21, "Haroldo-OK\\2016", "Not Tyrian",
   "A very basic shoot-em-up.\n"
   "Built using devkitSMS & SMSlib - https://github.com/sverx/devkitSMS");
