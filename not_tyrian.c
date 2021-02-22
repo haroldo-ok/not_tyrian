@@ -7,6 +7,7 @@
 #include "gfx.h"
 
 typedef struct enemy {
+	unsigned char type;
 	int x, y;
 	int spd_x;
 } enemy;
@@ -48,23 +49,13 @@ void main(void) {
 	SMS_loadPSGaidencompressedTiles(enemy__tiles__psgcompr, 160);
 	SMS_setClippingWindow(0, 0, 255, 192);
 	SMS_displayOn();
-	
-	enemies[0].x = 0;
-	enemies[0].y = 0;
-	enemies[1].x = 0;
-	enemies[1].y = 32;
-	enemies[2].x = 8;
-	enemies[2].y = 64;
-	enemies[3].x = 16;
-	enemies[3].y = 96;
-	enemies[4].x = 32;
-	enemies[4].y = 128;
-	enemies[5].x = 64;
-	enemies[5].y = 160;
-	
+		
 	enm = enemies;
 	for (int i = 6; i; i--, enm++) {
-		enm->spd_x = 2;
+		enm->type = 0;
+		enm->x = 0;
+		enm->y = i << 5;
+		//enm->spd_x = 2;
 	}
 
 	while (true) {
@@ -92,9 +83,8 @@ void main(void) {
 		if ((enemy_frame >> 2) > 8) enemy_frame = 0;
 		
 		enm = enemies;
-		for (int i = 6; i; i--, enm++) {
-			enm->y++;
-			if (enm->y > 192) enm->y = 0;
+		for (int i = 6; i; i--, enm++) {			
+			enm->spd_x = (enm->y + 24) >> 6;
 			
 			enm->x += enm->spd_x;
 			if (enm->x < 0) {
@@ -104,6 +94,13 @@ void main(void) {
 				enm->x = (256 - 24);
 				enm->spd_x = -enm->spd_x;
 			}
+			
+			enm->y++;
+			if (enm->y > 192) {
+				enm->type = ((rand() >> 2) & 0x01) + 1;
+				enm->x = 0;
+				enm->y = -24;
+			}
 		}
 		
 		SMS_initSprites();
@@ -112,10 +109,13 @@ void main(void) {
 
 		enm = enemies;
 		for (int i = 6; i; i--, enm++) {
-			draw_ship(enm->x, enm->y, uship_tile_indexes[(uship_frame >> 2) & 0x07], 48);
+			if (enm->type == 1) {
+				draw_ship(enm->x, enm->y, uship_tile_indexes[(uship_frame >> 2) & 0x07], 48);
+			} else if (enm->type == 2) {
+				draw_ship(enm->x, enm->y, enemy_tile_indexes[(enemy_frame >> 2)], 30);
+			}
 		}
 		
-		draw_ship(256 - 48 - 24, 8, enemy_tile_indexes[(enemy_frame >> 2)], 30);
 
 		SMS_finalizeSprites();
 
