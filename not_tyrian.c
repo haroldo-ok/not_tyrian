@@ -6,9 +6,22 @@
 #include "PSGlib.h"
 #include "gfx.h"
 
+typedef struct enemy {
+	int x, y;
+} enemy;
+
 const unsigned char base_tile_indexes[] = { 2, 8, 14, 20, 26 };
 const unsigned char uship_tile_indexes[] = { 64, 70, 76, 82, 88, 94, 100, 106 };
 const unsigned char enemy_tile_indexes[] = { 160, 166, 172, 178, 184, 178, 172, 166, 160 };
+
+const enemy enemies[6] = {
+	{0, 0},
+	{0, 32},	
+	{8, 64},	
+	{16, 96},	
+	{32, 128},	
+	{64, 160},	
+};
 
 void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsigned char line_incr) {
 	SMS_addSprite(x, y, base_tile);
@@ -29,6 +42,8 @@ void main(void) {
 	int tilt = 0;
 	unsigned char uship_frame = 0;
 	unsigned char enemy_frame = 0;
+	unsigned char i;
+	enemy *enm;
 	
 	SMS_useFirstHalfTilesforSprites(true);
 	SMS_setSpriteMode(SPRITEMODE_TALL);
@@ -69,7 +84,11 @@ void main(void) {
 
 		draw_ship(x, y, base_tile_indexes[(tilt + (2 << 2)) >> 2], 30);
 
-		draw_ship(48, 8, uship_tile_indexes[(uship_frame >> 2) & 0x07], 48);
+		enm = enemies;
+		for (int i = 6; i; i--, enm++) {
+			draw_ship(enm->x, enm->y, uship_tile_indexes[(uship_frame >> 2) & 0x07], 48);
+		}
+		
 		draw_ship(256 - 48 - 24, 8, enemy_tile_indexes[(enemy_frame >> 2)], 30);
 
 		SMS_finalizeSprites();
