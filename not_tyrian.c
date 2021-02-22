@@ -18,6 +18,8 @@ const unsigned char enemy_tile_indexes[] = { 160, 166, 172, 178, 184, 178, 172, 
 
 enemy enemies[6];
 
+#define FOR_EACH_ENEMY(enm) enm = enemies; for (int i = 6; i; i--, enm++)
+
 void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsigned char line_incr) {
 	SMS_addSprite(x, y, base_tile);
 	SMS_addSprite(x + 8, y, base_tile + 2);
@@ -30,15 +32,7 @@ void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsign
 	SMS_addSprite(x + 16, y, base_tile + 4);
 }
 
-void main(void) {
-	unsigned char y = 160;
-	unsigned char x = 0;
-	unsigned char joy = 0;
-	int tilt = 0;
-	unsigned char uship_frame = 0;
-	unsigned char enemy_frame = 0;
-	enemy *enm;
-	
+void initialize() {
 	SMS_useFirstHalfTilesforSprites(true);
 	SMS_setSpriteMode(SPRITEMODE_TALL);
 
@@ -49,9 +43,20 @@ void main(void) {
 	SMS_loadPSGaidencompressedTiles(enemy__tiles__psgcompr, 160);
 	SMS_setClippingWindow(0, 0, 255, 192);
 	SMS_displayOn();
-		
-	enm = enemies;
-	for (int i = 6; i; i--, enm++) {
+}
+
+void main(void) {
+	unsigned char y = 160;
+	unsigned char x = 0;
+	unsigned char joy = 0;
+	int tilt = 0;
+	unsigned char uship_frame = 0;
+	unsigned char enemy_frame = 0;
+	enemy *enm;
+	
+	initialize();
+			
+	FOR_EACH_ENEMY(enm) {
 		enm->type = 0;
 		enm->x = 0;
 		enm->y = i << 5;
@@ -82,8 +87,7 @@ void main(void) {
 		enemy_frame++;
 		if ((enemy_frame >> 2) > 8) enemy_frame = 0;
 		
-		enm = enemies;
-		for (int i = 6; i; i--, enm++) {			
+		FOR_EACH_ENEMY(enm) {			
 			enm->spd_x = (enm->y + 24) >> 6;
 			
 			enm->x += enm->spd_x;
@@ -107,8 +111,7 @@ void main(void) {
 
 		draw_ship(x, y, base_tile_indexes[(tilt + (2 << 2)) >> 2], 30);
 
-		enm = enemies;
-		for (int i = 6; i; i--, enm++) {
+		FOR_EACH_ENEMY(enm) {
 			if (enm->type == 1) {
 				draw_ship(enm->x, enm->y, uship_tile_indexes[(uship_frame >> 2) & 0x07], 48);
 			} else if (enm->type == 2) {
