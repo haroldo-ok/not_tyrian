@@ -16,6 +16,8 @@ const unsigned char base_tile_indexes[] = { 2, 8, 14, 20, 26 };
 const unsigned char uship_tile_indexes[] = { 64, 70, 76, 82, 88, 94, 100, 106 };
 const unsigned char enemy_tile_indexes[] = { 160, 166, 172, 178, 184, 178, 172, 166, 160 };
 
+unsigned char uship_frame = 0;
+unsigned char enemy_frame = 0;
 enemy enemies[6];
 
 #define FOR_EACH_ENEMY(enm) enm = enemies; for (int i = 6; i; i--, enm++)
@@ -45,23 +47,69 @@ void initialize() {
 	SMS_displayOn();
 }
 
-void main(void) {
-	unsigned char y = 160;
-	unsigned char x = 0;
-	unsigned char joy = 0;
-	int tilt = 0;
-	unsigned char uship_frame = 0;
-	unsigned char enemy_frame = 0;
+void clear_enemies() {
 	enemy *enm;
-	
-	initialize();
-			
+
+	uship_frame = 0;
+	enemy_frame = 0;
+
 	FOR_EACH_ENEMY(enm) {
 		enm->type = 0;
 		enm->x = 0;
 		enm->y = i << 5;
 		//enm->spd_x = 2;
 	}
+}
+
+void move_enemies() {
+	enemy *enm;
+
+	FOR_EACH_ENEMY(enm) {			
+		enm->spd_x = (enm->y + 24) >> 6;
+		
+		enm->x += enm->spd_x;
+		if (enm->x < 0) {
+			enm->x = 0;
+			enm->spd_x = -enm->spd_x;
+		} else if (enm->x > (256 - 24)) {
+			enm->x = (256 - 24);
+			enm->spd_x = -enm->spd_x;
+		}
+		
+		enm->y++;
+		if (enm->y > 192) {
+			enm->type = ((rand() >> 2) & 0x01) + 1;
+			enm->x = 0;
+			enm->y = -24;
+		}
+	}
+}
+
+void draw_enemies() {
+	enemy *enm;
+
+	uship_frame++;
+	enemy_frame++;
+	if ((enemy_frame >> 2) > 8) enemy_frame = 0;
+
+	FOR_EACH_ENEMY(enm) {
+		if (enm->type == 1) {
+			draw_ship(enm->x, enm->y, uship_tile_indexes[(uship_frame >> 2) & 0x07], 48);
+		} else if (enm->type == 2) {
+			draw_ship(enm->x, enm->y, enemy_tile_indexes[(enemy_frame >> 2)], 30);
+		}
+	}
+}
+
+void main(void) {
+	unsigned char y = 160;
+	unsigned char x = 0;
+	unsigned char joy = 0;
+	int tilt = 0;
+	
+	initialize();
+
+	clear_enemies();
 
 	while (true) {
 		joy = SMS_getKeysStatus();
@@ -82,44 +130,15 @@ void main(void) {
 		} else if (joy & PORT_A_KEY_DOWN) {
 			if (y < (192 - 32)) y += 2;
 		}
-		
-		uship_frame++;
-		enemy_frame++;
-		if ((enemy_frame >> 2) > 8) enemy_frame = 0;
-		
-		FOR_EACH_ENEMY(enm) {			
-			enm->spd_x = (enm->y + 24) >> 6;
-			
-			enm->x += enm->spd_x;
-			if (enm->x < 0) {
-				enm->x = 0;
-				enm->spd_x = -enm->spd_x;
-			} else if (enm->x > (256 - 24)) {
-				enm->x = (256 - 24);
-				enm->spd_x = -enm->spd_x;
-			}
-			
-			enm->y++;
-			if (enm->y > 192) {
-				enm->type = ((rand() >> 2) & 0x01) + 1;
-				enm->x = 0;
-				enm->y = -24;
-			}
-		}
-		
+				
+		move_enemies();
+				
 		SMS_initSprites();
 
 		draw_ship(x, y, base_tile_indexes[(tilt + (2 << 2)) >> 2], 30);
-
-		FOR_EACH_ENEMY(enm) {
-			if (enm->type == 1) {
-				draw_ship(enm->x, enm->y, uship_tile_indexes[(uship_frame >> 2) & 0x07], 48);
-			} else if (enm->type == 2) {
-				draw_ship(enm->x, enm->y, enemy_tile_indexes[(enemy_frame >> 2)], 30);
-			}
-		}
 		
-
+		draw_enemies();
+		
 		SMS_finalizeSprites();
 
 		SMS_waitForVBlank();
