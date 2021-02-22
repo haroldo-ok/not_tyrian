@@ -8,20 +8,14 @@
 
 typedef struct enemy {
 	int x, y;
+	int spd_x;
 } enemy;
 
 const unsigned char base_tile_indexes[] = { 2, 8, 14, 20, 26 };
 const unsigned char uship_tile_indexes[] = { 64, 70, 76, 82, 88, 94, 100, 106 };
 const unsigned char enemy_tile_indexes[] = { 160, 166, 172, 178, 184, 178, 172, 166, 160 };
 
-const enemy enemies[6] = {
-	{0, 0},
-	{0, 32},	
-	{8, 64},	
-	{16, 96},	
-	{32, 128},	
-	{64, 160},	
-};
+enemy enemies[6];
 
 void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsigned char line_incr) {
 	SMS_addSprite(x, y, base_tile);
@@ -42,7 +36,6 @@ void main(void) {
 	int tilt = 0;
 	unsigned char uship_frame = 0;
 	unsigned char enemy_frame = 0;
-	unsigned char i;
 	enemy *enm;
 	
 	SMS_useFirstHalfTilesforSprites(true);
@@ -56,6 +49,24 @@ void main(void) {
 	SMS_setClippingWindow(0, 0, 255, 192);
 	SMS_displayOn();
 	
+	enemies[0].x = 0;
+	enemies[0].y = 0;
+	enemies[1].x = 0;
+	enemies[1].y = 32;
+	enemies[2].x = 8;
+	enemies[2].y = 64;
+	enemies[3].x = 16;
+	enemies[3].y = 96;
+	enemies[4].x = 32;
+	enemies[4].y = 128;
+	enemies[5].x = 64;
+	enemies[5].y = 160;
+	
+	enm = enemies;
+	for (int i = 6; i; i--, enm++) {
+		enm->spd_x = 2;
+	}
+
 	while (true) {
 		joy = SMS_getKeysStatus();
 		
@@ -79,6 +90,21 @@ void main(void) {
 		uship_frame++;
 		enemy_frame++;
 		if ((enemy_frame >> 2) > 8) enemy_frame = 0;
+		
+		enm = enemies;
+		for (int i = 6; i; i--, enm++) {
+			enm->y++;
+			if (enm->y > 192) enm->y = 0;
+			
+			enm->x += enm->spd_x;
+			if (enm->x < 0) {
+				enm->x = 0;
+				enm->spd_x = -enm->spd_x;
+			} else if (enm->x > (256 - 24)) {
+				enm->x = (256 - 24);
+				enm->spd_x = -enm->spd_x;
+			}
+		}
 		
 		SMS_initSprites();
 
