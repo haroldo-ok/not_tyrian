@@ -8,6 +8,7 @@
 
 typedef struct enemy {
 	unsigned char type;
+	unsigned char frame;
 	int x, y;
 	int spd_x;
 } enemy;
@@ -16,8 +17,6 @@ const unsigned char base_tile_indexes[] = { 2, 8, 14, 20, 26 };
 const unsigned char uship_tile_indexes[] = { 64, 70, 76, 82, 88, 94, 100, 106 };
 const unsigned char enemy_tile_indexes[] = { 160, 166, 172, 178, 184, 178, 172, 166, 160 };
 
-unsigned char uship_frame = 0;
-unsigned char enemy_frame = 0;
 enemy enemies[6];
 
 #define FOR_EACH_ENEMY(enm) enm = enemies; for (int i = 6; i; i--, enm++)
@@ -49,9 +48,6 @@ void initialize() {
 
 void clear_enemies() {
 	enemy *enm;
-
-	uship_frame = 0;
-	enemy_frame = 0;
 
 	FOR_EACH_ENEMY(enm) {
 		enm->type = 0;
@@ -88,15 +84,14 @@ void move_enemies() {
 void draw_enemies() {
 	enemy *enm;
 
-	uship_frame++;
-	enemy_frame++;
-	if ((enemy_frame >> 2) > 8) enemy_frame = 0;
-
 	FOR_EACH_ENEMY(enm) {
 		if (enm->type == 1) {
-			draw_ship(enm->x, enm->y, uship_tile_indexes[(uship_frame >> 2) & 0x07], 48);
+			enm->frame++;
+			draw_ship(enm->x, enm->y, uship_tile_indexes[(enm->frame >> 2) & 0x07], 48);
 		} else if (enm->type == 2) {
-			draw_ship(enm->x, enm->y, enemy_tile_indexes[(enemy_frame >> 2)], 30);
+			enm->frame++;
+			if ((enm->frame >> 2) > 8) enm->frame = 0;
+			draw_ship(enm->x, enm->y, enemy_tile_indexes[(enm->frame >> 2)], 30);
 		}
 	}
 }
