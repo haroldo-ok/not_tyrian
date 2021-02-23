@@ -12,10 +12,12 @@
 
 typedef struct enemy {
 	unsigned char type;
+	unsigned char movement;
 	unsigned char frame;
 	int x, y;
 	int spd_x;
 	int dir_x;
+	int min_x, max_x;
 } enemy;
 
 const unsigned char base_tile_indexes[] = { 2, 8, 14, 20, 26 };
@@ -25,6 +27,7 @@ const unsigned char enemy_tile_indexes[] = { 160, 166, 172, 178, 184, 178, 172, 
 enemy enemies[6];
 struct wave {
 	unsigned char type;
+	unsigned char movement;
 	int x;
 	unsigned char remaining;
 } wave;
@@ -71,30 +74,34 @@ void next_wave() {
 	if (wave.type) {
 		// Pause between attacks
 		wave.type = 0;
-		wave.remaining = (rand() % 0x03) + 1;
+		wave.remaining = ((rand() >> 4) % 0x03) + 1;
 	} else {
 		// Actual enemies
-		wave.type = (rand() & 0x01) + 1;
-		wave.remaining = (rand() & 0x03) + 4;
+		wave.type = ((rand() >> 4) & 0x01) + 1;
+		wave.remaining = ((rand() >> 4) & 0x03) + 4;
 	}
 	wave.x = rand() % MAX_X;
+	wave.movement = (rand() >> 4) & 0x01;
 }
 
 void move_enemies() {
 	enemy *enm;
 
 	FOR_EACH_ENEMY(enm) {			
-		enm->spd_x = (enm->y + 24) >> 6;
-		if (enm->dir_x < 0) {
-			enm->spd_x = -enm->spd_x;
+		if (enm->movement) {			
+			enm->spd_x = (enm->y + 24) >> 6;
+			if (enm->dir_x < 0) {
+				enm->spd_x = -enm->spd_x;
+			}
 		}
 		
 		enm->x += enm->spd_x;
-		if (enm->x < 0) {
-			enm->x = 0;
+		
+		if (enm->x < enm->min_x) {
+			enm->x = enm->min_x;
 			enm->spd_x = -enm->spd_x;
-		} else if (enm->x > MAX_X) {
-			enm->x = MAX_X;
+		} else if (enm->x > enm->max_x) {
+			enm->x = enm->max_x;
 			enm->spd_x = -enm->spd_x;
 		}
 		
@@ -105,10 +112,32 @@ void move_enemies() {
 			}
 		
 			enm->type = wave.type;
+			enm->movement = wave.movement;
 			enm->x = wave.x;
 			enm->y = -24;
 			enm->frame = rand() % (8 << 2);
 			enm->dir_x = enm->x > MIDDLE_X ? -1 : 1;
+			
+			if (wave.movement) {
+				enm->min_x = 0;
+				enm->max_x = MAX_X;
+			} else if (!wave.movement) {
+				if (wave.x > MIDDLE_X) {
+					enm->max_x = wave.x;
+					enm->min_x = enm->max_x - MIDDLE_X;
+				} else {
+					enm->min_x = wave.x;
+					enm->max_x = enm->min_x + MIDDLE_X;
+				}
+				
+				if (wave.remaining & 0x01) {
+					enm->x = enm->min_x;
+					enm->spd_x = 2;
+				} else {
+					enm->x = enm->max_x;
+					enm->spd_x = -2;
+				}
+			}
 			
 			wave.remaining--;
 		}
