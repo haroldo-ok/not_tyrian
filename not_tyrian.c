@@ -66,8 +66,15 @@ void clear_enemies() {
 }
 
 void next_wave() {
-	wave.remaining = ((rand() >> 2) % 0x03) + 4;
-	wave.type = ((rand() >> 2) & 0x01) + 1;
+	if (wave.type) {
+		// Pause between attacks
+		wave.type = 0;
+		wave.remaining = (rand() % 0x03) + 1;
+	} else {
+		// Actual enemies
+		wave.type = (rand() & 0x01) + 1;
+		wave.remaining = (rand() & 0x03) + 4;
+	}
 	wave.x = rand() % MAX_X;
 }
 
