@@ -6,6 +6,9 @@
 #include "PSGlib.h"
 #include "gfx.h"
 
+#define FOR_EACH_ENEMY(enm) enm = enemies; for (int i = 6; i; i--, enm++)
+#define MAX_X (256 - 24)
+
 typedef struct enemy {
 	unsigned char type;
 	unsigned char frame;
@@ -18,8 +21,11 @@ const unsigned char uship_tile_indexes[] = { 64, 70, 76, 82, 88, 94, 100, 106 };
 const unsigned char enemy_tile_indexes[] = { 160, 166, 172, 178, 184, 178, 172, 166, 160 };
 
 enemy enemies[6];
-
-#define FOR_EACH_ENEMY(enm) enm = enemies; for (int i = 6; i; i--, enm++)
+struct wave {
+	unsigned char type;
+	int x;
+	unsigned char remaining;
+} wave;
 
 void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsigned char line_incr) {
 	SMS_addSprite(x, y, base_tile);
@@ -48,6 +54,8 @@ void initialize() {
 
 void clear_enemies() {
 	enemy *enm;
+	
+	wave.remaining = 0;
 
 	FOR_EACH_ENEMY(enm) {
 		enm->type = 0;
@@ -55,6 +63,12 @@ void clear_enemies() {
 		enm->y = i << 5;
 		//enm->spd_x = 2;
 	}
+}
+
+void next_wave() {
+	wave.remaining = ((rand() >> 2) % 0x03) + 4;
+	wave.type = ((rand() >> 2) & 0x01) + 1;
+	wave.x = rand() % MAX_X;
 }
 
 void move_enemies() {
@@ -67,16 +81,23 @@ void move_enemies() {
 		if (enm->x < 0) {
 			enm->x = 0;
 			enm->spd_x = -enm->spd_x;
-		} else if (enm->x > (256 - 24)) {
-			enm->x = (256 - 24);
+		} else if (enm->x > MAX_X) {
+			enm->x = MAX_X;
 			enm->spd_x = -enm->spd_x;
 		}
 		
 		enm->y++;
-		if (enm->y > 192) {
-			enm->type = ((rand() >> 2) & 0x01) + 1;
-			enm->x = 0;
+		if (enm->y > 192) {			
+			if (!wave.remaining) {
+				next_wave();
+			}
+		
+			enm->type = wave.type;
+			enm->x = wave.x;
 			enm->y = -24;
+			enm->frame = rand() % (8 << 2);
+			
+			wave.remaining--;
 		}
 	}
 }
@@ -113,7 +134,7 @@ void main(void) {
 			if (x) x -= 2;
 			if (tilt > -(2 << 2) + 1) tilt--;
 		} else if (joy & PORT_A_KEY_RIGHT) {
-			if (x < (256 - 24)) x += 2;
+			if (x < MAX_X) x += 2;
 			if (tilt < (2 << 2) - 1) tilt++;
 		} else {
 			if (tilt < 0) tilt++;
