@@ -8,12 +8,14 @@
 
 #define FOR_EACH_ENEMY(enm) enm = enemies; for (int i = 6; i; i--, enm++)
 #define MAX_X (256 - 24)
+#define MIDDLE_X (MAX_X >> 1)
 
 typedef struct enemy {
 	unsigned char type;
 	unsigned char frame;
 	int x, y;
 	int spd_x;
+	int dir_x;
 } enemy;
 
 const unsigned char base_tile_indexes[] = { 2, 8, 14, 20, 26 };
@@ -83,6 +85,9 @@ void move_enemies() {
 
 	FOR_EACH_ENEMY(enm) {			
 		enm->spd_x = (enm->y + 24) >> 6;
+		if (enm->dir_x < 0) {
+			enm->spd_x = -enm->spd_x;
+		}
 		
 		enm->x += enm->spd_x;
 		if (enm->x < 0) {
@@ -103,6 +108,7 @@ void move_enemies() {
 			enm->x = wave.x;
 			enm->y = -24;
 			enm->frame = rand() % (8 << 2);
+			enm->dir_x = enm->x > MIDDLE_X ? -1 : 1;
 			
 			wave.remaining--;
 		}
