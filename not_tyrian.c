@@ -222,17 +222,39 @@ void fire_shot(unsigned char x, int y) {
 	}
 }
 
+void draw_tile(unsigned char x, unsigned char y, unsigned int base_tile) {
+	unsigned int tiles[4];
+	int n = base_tile;
+	
+	tiles[0] = n++;
+	tiles[1] = n++;
+	tiles[2] = n++;
+	tiles[3] = n++;
+	
+	SMS_loadTileMapArea(x, y, tiles, 2, 2);
+}
+
+void draw_tiles() {
+	for (char i = 0; i != 16; i++) {
+		for (char j = 0; j != 14; j++) {
+			draw_tile(i << 1, j << 1, 256);
+		}
+	}
+}
+
 void main(void) {
 	unsigned char y = 160;
 	unsigned char x = 0;
 	unsigned char joy = 0;
+	unsigned char scroll_y = 0;
 	int tilt = 0;
 	
 	initialize();
+	draw_tiles();
 
 	clear_enemies();
 	clear_shots();
-
+	
 	while (true) {
 		joy = SMS_getKeysStatus();
 		
@@ -259,6 +281,10 @@ void main(void) {
 
 		move_shots();				
 		move_enemies();
+		
+		scroll_y--;
+		if (scroll_y > 223) scroll_y = 223;
+			
 				
 		SMS_initSprites();
 
@@ -271,6 +297,7 @@ void main(void) {
 
 		SMS_waitForVBlank();
 		SMS_copySpritestoSAT();
+		SMS_setBGScrollY(scroll_y);
 	}
 
 }
