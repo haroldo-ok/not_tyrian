@@ -53,6 +53,7 @@ void initialize() {
 	SMS_loadPSGaidencompressedTiles(player__tiles__psgcompr, 2);
 	SMS_loadPSGaidencompressedTiles(u_fighter__tiles__psgcompr, 64);
 	SMS_loadPSGaidencompressedTiles(enemy__tiles__psgcompr, 160);
+	SMS_loadPSGaidencompressedTiles(shot__tiles__psgcompr, 224);
 	SMS_setClippingWindow(0, 0, 255, 192);
 	SMS_displayOn();
 }
