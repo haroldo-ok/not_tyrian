@@ -59,10 +59,12 @@ void initialize() {
 
 	SMS_setBGPaletteColor(0, 0x04);	
 	SMS_loadSpritePalette(player__palette__bin);
+	SMS_loadBGPalette(tileset__palette__bin);
 	SMS_loadPSGaidencompressedTiles(player__tiles__psgcompr, 2);
 	SMS_loadPSGaidencompressedTiles(u_fighter__tiles__psgcompr, 64);
 	SMS_loadPSGaidencompressedTiles(enemy__tiles__psgcompr, 160);
 	SMS_loadPSGaidencompressedTiles(shot__tiles__psgcompr, 224);
+	SMS_loadPSGaidencompressedTiles(tileset__tiles__psgcompr, 256);
 	SMS_setClippingWindow(0, 0, 255, 192);
 	SMS_displayOn();
 }
