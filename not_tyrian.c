@@ -7,6 +7,7 @@
 #include "gfx.h"
 
 #define FOR_EACH_ENEMY(enm) enm = enemies; for (int i = 6; i; i--, enm++)
+#define FOR_EACH_SHOT(sht) sht = shots; for (int i = 6; i; i--, sht++)
 #define MAX_X (256 - 24)
 #define MIDDLE_X (MAX_X >> 1)
 
@@ -20,6 +21,11 @@ typedef struct enemy {
 	int min_x, max_x;
 } enemy;
 
+typedef struct shot {
+	int x, y;
+	bool active;
+} shot;
+
 const unsigned char base_tile_indexes[] = { 2, 8, 14, 20, 26 };
 const unsigned char uship_tile_indexes[] = { 64, 70, 76, 82, 88, 94, 100, 106 };
 const unsigned char enemy_tile_indexes[] = { 160, 166, 172, 178, 184, 178, 172, 166, 160 };
@@ -31,6 +37,9 @@ struct wave {
 	int x;
 	unsigned char remaining;
 } wave;
+
+shot shots[6];
+char shot_delay;
 
 void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsigned char line_incr) {
 	SMS_addSprite(x, y, base_tile);
@@ -160,6 +169,57 @@ void draw_enemies() {
 	}
 }
 
+void clear_shots() {
+	shot *sht;
+
+	FOR_EACH_SHOT(sht) {
+		sht->x = 0;
+		sht->y = 0;
+		sht->active = false;
+	}
+	
+	shot_delay = 0;
+}
+
+void move_shots() {
+	shot *sht;
+
+	if (shot_delay) shot_delay--;
+	
+	FOR_EACH_SHOT(sht) {
+		sht->y -= 3;
+		if (sht->y < -16) sht->active = false;
+	}	
+}
+
+void draw_shots() {
+	shot *sht;
+
+	FOR_EACH_SHOT(sht) {
+		if (sht->active) {
+			SMS_addSprite(sht->x, sht->y, 224);
+			SMS_addSprite(sht->x + 8, sht->y, 226);
+		}
+	}
+}
+
+void fire_shot(unsigned char x, int y) {
+	if (shot_delay) {
+		return;
+	}
+	
+	shot *sht;	
+	FOR_EACH_SHOT(sht) {
+		if (!sht->active) {
+			sht->x = x + 4;
+			sht->y = y - 12;
+			sht->active = true;
+			shot_delay = 15;
+			return;
+		}
+	}
+}
+
 void main(void) {
 	unsigned char y = 160;
 	unsigned char x = 0;
@@ -169,6 +229,7 @@ void main(void) {
 	initialize();
 
 	clear_enemies();
+	clear_shots();
 
 	while (true) {
 		joy = SMS_getKeysStatus();
@@ -189,7 +250,12 @@ void main(void) {
 		} else if (joy & PORT_A_KEY_DOWN) {
 			if (y < (192 - 32)) y += 2;
 		}
-				
+		
+		if (joy & (PORT_A_KEY_1 | PORT_A_KEY_2)) {
+			fire_shot(x, y);
+		}
+
+		move_shots();				
 		move_enemies();
 				
 		SMS_initSprites();
@@ -197,6 +263,7 @@ void main(void) {
 		draw_ship(x, y, base_tile_indexes[(tilt + (2 << 2)) >> 2], 30);
 		
 		draw_enemies();
+		draw_shots();
 		
 		SMS_finalizeSprites();
 
@@ -207,6 +274,6 @@ void main(void) {
 }
 
 SMS_EMBED_SEGA_ROM_HEADER(9999,0); // code 9999 hopefully free, here this means 'homebrew'
-SMS_EMBED_SDSC_HEADER(0,2, 2021,2,21, "Haroldo-OK\\2016", "Not Tyrian",
+SMS_EMBED_SDSC_HEADER(0,2, 2021,2,25, "Haroldo-OK\\2021", "Not Tyrian",
   "A very basic shoot-em-up.\n"
   "Built using devkitSMS & SMSlib - https://github.com/sverx/devkitSMS");
