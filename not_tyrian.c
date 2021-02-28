@@ -41,6 +41,8 @@ struct wave {
 shot shots[6];
 char shot_delay;
 
+int level_timer;
+
 bool boss_mode;
 struct boss {
 	int x, y;
@@ -80,12 +82,16 @@ void draw_tiles() {
 	}
 }
 
-void initialize_gameplay() {	
+void initialize() {	
 	SMS_useFirstHalfTilesforSprites(true);
 	SMS_setSpriteMode(SPRITEMODE_TALL);
 
 	SMS_displayOff();
-	
+}
+
+void initialize_gameplay() {			
+	SMS_zeroBGPalette();
+
 	SMS_setBGScrollX(0);
 	SMS_setBGScrollY(0);
 	
@@ -103,8 +109,9 @@ void initialize_gameplay() {
 	SMS_loadBGPalette(tileset__palette__bin);
 
 	SMS_displayOn();
-	
+
 	boss_mode = false;
+	level_timer = 2048;
 }
 
 void move_boss() {
@@ -142,6 +149,7 @@ void initialize_boss() {
 	boss.x = (256 - 113) >> 1;
 	boss.y = 0;
 	boss.change_delay = 0;
+	level_timer = 1024;
 	
 	SMS_zeroBGPalette();
 	SMS_loadPSGaidencompressedTiles(boss__tiles__psgcompr, 256);
@@ -251,6 +259,9 @@ void move_enemies() {
 void draw_enemies() {
 	enemy *enm;
 
+	// Do not draw enemies in boss mode
+	if (boss_mode) return;
+	
 	FOR_EACH_ENEMY(enm) {
 		if (enm->type == 1) {
 			enm->frame++;
@@ -345,14 +356,23 @@ void main(void) {
 	int tilt = 0;
 	
 	title_screen();
-	
-	initialize_gameplay();
-	initialize_boss();
 
+	initialize();
+	initialize_gameplay();
+	
 	clear_enemies();
 	clear_shots();
 	
 	while (true) {
+		if (!level_timer) {
+			if (boss_mode) {
+				initialize_gameplay();
+			} else {
+				initialize_boss();
+			}
+		}
+		level_timer--;
+		
 		joy = SMS_getKeysStatus();
 		
 		if (joy & PORT_A_KEY_LEFT) {
