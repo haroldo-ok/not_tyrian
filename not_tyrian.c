@@ -348,9 +348,53 @@ void title_screen() {
 	}
 }
 
+void draw_player(unsigned char x, unsigned char y, int tilt) {
+	draw_ship(x, y, base_tile_indexes[(tilt + (2 << 2)) >> 2], 30);
+}
+
+void level_end(unsigned char x, unsigned char y) {
+	int prev_y[32];
+	char phase = 2;
+	
+	prev_y[0] = y;
+	for (int i = 31; i; i--) {
+		prev_y[i] = -32;
+	}
+	
+	while (phase) {
+		for (int i = 31; i; i--) {
+			prev_y[i] = prev_y[i - 1];
+		}
+	
+		if (phase == 2) {
+			prev_y[0] += 3;
+			if (prev_y[0] > (192 - 24)) {
+				phase = 1;
+			}
+		} else {
+			prev_y[0] -= 3;
+			if (prev_y[0] < -64) {
+				prev_y[0] = 0;
+				phase = 0;
+			}
+		}			
+		
+		SMS_initSprites();
+		
+		for (int i = 0; i < 32; i += 4) {
+			draw_player(x, prev_y[i], 0);
+		}
+		
+		SMS_finalizeSprites();
+		
+		SMS_waitForVBlank();
+		SMS_copySpritestoSAT();
+	}
+}
+
 void main(void) {
-	unsigned char y = 160;
 	unsigned char x = 0;
+	unsigned char y = 160;
 	unsigned char joy = 0;
 	unsigned char scroll_y = 0;
 	int tilt = 0;
@@ -362,10 +406,11 @@ void main(void) {
 	
 	clear_enemies();
 	clear_shots();
-	
+		
 	while (true) {
 		if (!level_timer) {
 			if (boss_mode) {
+				level_end(x, y);
 				initialize_gameplay();
 			} else {
 				initialize_boss();
@@ -406,7 +451,7 @@ void main(void) {
 				
 		SMS_initSprites();
 
-		draw_ship(x, y, base_tile_indexes[(tilt + (2 << 2)) >> 2], 30);
+		draw_player(x, y, tilt);
 		
 		draw_enemies();
 		draw_shots();
