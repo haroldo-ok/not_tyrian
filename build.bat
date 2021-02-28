@@ -4,6 +4,8 @@ D:\Util\bmp2tile-0.5\BMP2Tile.exe gfx\png\enemy.png -noremovedupes -8x16 -saveti
 D:\Util\bmp2tile-0.5\BMP2Tile.exe gfx\png\shot.png -noremovedupes -8x16 -savetiles "gfx\shot (tiles).psgcompr"
 D:\Util\bmp2tile-0.5\BMP2Tile.exe gfx\png\tileset.png -noremovedupes -palsms -fullpalette -savetiles "gfx\tileset (tiles).psgcompr" -savepalette "gfx\tileset (palette).bin"
 D:\Util\bmp2tile-0.5\BMP2Tile.exe gfx\png\title.png -palsms -fullpalette -savetiles "gfx\title (tiles).psgcompr" -savepalette "gfx\title (palette).bin" -savetilemap "gfx\title (tilemap).bin"
+D:\Util\bmp2tile-0.5\BMP2Tile.exe gfx\png\boss.png -palsms -fullpalette -savetiles "gfx\boss (tiles).psgcompr" -savepalette "gfx\boss (palette).bin" -savetilemap "gfx\boss (tilemap).bin"
+
 folder2c gfx gfx
 sdcc -c -mz80 --peep-file peep-rules.txt gfx.c
 sdcc -c -mz80 --peep-file peep-rules.txt not_tyrian.c
