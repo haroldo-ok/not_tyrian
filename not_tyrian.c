@@ -476,6 +476,6 @@ void main(void) {
 }
 
 SMS_EMBED_SEGA_ROM_HEADER(9999,0); // code 9999 hopefully free, here this means 'homebrew'
-SMS_EMBED_SDSC_HEADER(0,2, 2021,2,25, "Haroldo-OK\\2021", "Not Tyrian",
-  "A very basic shoot-em-up.\n"
+SMS_EMBED_SDSC_HEADER(0,3, 2021,2,28, "Haroldo-OK\\2021", "Not Tyrian",
+  "A very basic shoot-em-up prototype.\n"
   "Built using devkitSMS & SMSlib - https://github.com/sverx/devkitSMS");
