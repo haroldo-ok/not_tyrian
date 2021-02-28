@@ -393,8 +393,8 @@ void level_end(unsigned char x, unsigned char y) {
 }
 
 void main(void) {
-	unsigned char x = 0;
-	unsigned char y = 160;
+	unsigned char x = (256 - 24) >> 1;
+	unsigned char y = (192 - 28) * 2 / 3;
 	unsigned char joy = 0;
 	unsigned char scroll_y = 0;
 	int tilt = 0;
