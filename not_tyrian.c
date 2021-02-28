@@ -79,9 +79,6 @@ void initialize_gameplay() {
 
 	SMS_displayOff();
 	
-	SMS_setBGPaletteColor(0, 0x04);	
-	SMS_loadSpritePalette(player__palette__bin);
-	SMS_loadBGPalette(tileset__palette__bin);
 	SMS_loadPSGaidencompressedTiles(player__tiles__psgcompr, 2);
 	SMS_loadPSGaidencompressedTiles(u_fighter__tiles__psgcompr, 64);
 	SMS_loadPSGaidencompressedTiles(enemy__tiles__psgcompr, 160);
@@ -90,6 +87,10 @@ void initialize_gameplay() {
 	SMS_setClippingWindow(0, 0, 255, 192);
 
 	draw_tiles();
+	
+	SMS_setBGPaletteColor(0, 0x04);	
+	SMS_loadSpritePalette(player__palette__bin);
+	SMS_loadBGPalette(tileset__palette__bin);
 
 	SMS_displayOn();
 }
