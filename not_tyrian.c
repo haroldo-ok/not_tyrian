@@ -42,6 +42,11 @@ shot shots[6];
 char shot_delay;
 
 bool boss_mode;
+struct boss {
+	int x, y;
+	int target_x, target_y;	
+	int change_delay;
+} boss;
 
 void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsigned char line_incr) {
 	SMS_addSprite(x, y, base_tile);
@@ -102,9 +107,41 @@ void initialize_gameplay() {
 	boss_mode = false;
 }
 
+void move_boss() {
+	if (!boss.change_delay) {
+		boss.target_x = abs(rand()) % (256 - 113);
+		boss.target_y = (abs(rand()) % (192 - 105));
+		boss.change_delay = 128;
+	}
+	boss.change_delay--;
+	
+	if (boss.x > boss.target_x) {
+		boss.x--;
+	} else if (boss.x < boss.target_x) {
+		boss.x++;
+	}
+
+	if (boss.y > boss.target_y) {
+		boss.y--;
+	} else if (boss.y < boss.target_y) {
+		boss.y++;
+	}
+}
+
+void draw_boss() {
+	if (!boss_mode) return;
+	
+	SMS_setBGScrollX(boss.x);
+	SMS_setBGScrollY(223 - boss.y);
+}
+
 void initialize_boss() {
 	unsigned int row[32];	
 	unsigned int *o = boss__tilemap__bin;	
+	
+	boss.x = (256 - 113) >> 1;
+	boss.y = 0;
+	boss.change_delay = 0;
 	
 	SMS_zeroBGPalette();
 	SMS_loadPSGaidencompressedTiles(boss__tiles__psgcompr, 256);
@@ -117,12 +154,11 @@ void initialize_boss() {
 			o++; d++;
 		}		
 	}
-
-	SMS_setBGScrollX(0);
-	SMS_setBGScrollY(0);
-	SMS_loadBGPalette(boss__palette__bin);
 	
 	boss_mode = true;
+	draw_boss();
+
+	SMS_loadBGPalette(boss__palette__bin);		
 }
 
 void clear_enemies() {
@@ -342,6 +378,7 @@ void main(void) {
 
 		move_shots();				
 		move_enemies();
+		move_boss();
 		
 		scroll_y--;
 		if (scroll_y > 223) scroll_y = 223;
@@ -362,6 +399,7 @@ void main(void) {
 		if (!boss_mode) {
 			SMS_setBGScrollY(scroll_y);
 		}
+		draw_boss();
 	}
 
 }
