@@ -438,7 +438,7 @@ void main(void) {
 		}
 		
 		if (joy & PORT_A_KEY_UP) {
-			if (y) y -= 2;
+			if (y > 2) y -= 2;
 		} else if (joy & PORT_A_KEY_DOWN) {
 			if (y < (SCREEN_H - 32)) y += 2;
 		}
