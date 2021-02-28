@@ -8,7 +8,13 @@
 
 #define FOR_EACH_ENEMY(enm) enm = enemies; for (int i = 6; i; i--, enm++)
 #define FOR_EACH_SHOT(sht) sht = shots; for (int i = 6; i; i--, sht++)
-#define MAX_X (256 - 24)
+	
+#define SCREEN_W 256
+#define SCREEN_H 192
+#define SCROLL_H 224
+#define FIRST_BG_TILE 256
+ 
+#define MAX_X (SCREEN_W - 24)
 #define MIDDLE_X (MAX_X >> 1)
 
 typedef struct enemy {
@@ -77,7 +83,7 @@ void draw_tile(unsigned char x, unsigned char y, unsigned int base_tile) {
 void draw_tiles() {
 	for (char i = 0; i != 16; i++) {
 		for (char j = 0; j != 14; j++) {
-			draw_tile(i << 1, j << 1, 256);
+			draw_tile(i << 1, j << 1, FIRST_BG_TILE);
 		}
 	}
 }
@@ -99,8 +105,8 @@ void initialize_gameplay() {
 	SMS_loadPSGaidencompressedTiles(u_fighter__tiles__psgcompr, 64);
 	SMS_loadPSGaidencompressedTiles(enemy__tiles__psgcompr, 160);
 	SMS_loadPSGaidencompressedTiles(shot__tiles__psgcompr, 224);
-	SMS_loadPSGaidencompressedTiles(tileset__tiles__psgcompr, 256);
-	SMS_setClippingWindow(0, 0, 255, 192);
+	SMS_loadPSGaidencompressedTiles(tileset__tiles__psgcompr, FIRST_BG_TILE);
+	SMS_setClippingWindow(0, 0, 255, SCREEN_H);
 
 	draw_tiles();
 	
@@ -116,8 +122,8 @@ void initialize_gameplay() {
 
 void move_boss() {
 	if (!boss.change_delay) {
-		boss.target_x = abs(rand()) % (256 - 113);
-		boss.target_y = (abs(rand()) % (192 - 105));
+		boss.target_x = abs(rand()) % (SCREEN_W - 113);
+		boss.target_y = (abs(rand()) % (SCREEN_H - 105));
 		boss.change_delay = 128;
 	}
 	boss.change_delay--;
@@ -146,18 +152,18 @@ void initialize_boss() {
 	unsigned int row[32];	
 	unsigned int *o = boss__tilemap__bin;	
 	
-	boss.x = (256 - 113) >> 1;
+	boss.x = (SCREEN_W - 113) >> 1;
 	boss.y = 0;
 	boss.change_delay = 0;
 	level_timer = 1024;
 	
 	SMS_zeroBGPalette();
-	SMS_loadPSGaidencompressedTiles(boss__tiles__psgcompr, 256);
+	SMS_loadPSGaidencompressedTiles(boss__tiles__psgcompr, FIRST_BG_TILE);
 	
 	for (unsigned char y = 0; y != 28; y++) {
 		unsigned int *d = row;
 		for (unsigned char x = 0; x != 32; x++) {
-			*d = *o + 256;
+			*d = *o + FIRST_BG_TILE;
 			SMS_loadTileMap(0, y, row, 64);
 			o++; d++;
 		}		
@@ -218,7 +224,7 @@ void move_enemies() {
 		}
 		
 		enm->y++;
-		if (enm->y > 192) {			
+		if (enm->y > SCREEN_H) {			
 			if (!wave.remaining) {
 				next_wave();
 			}
@@ -340,7 +346,7 @@ void title_screen() {
 	while (!(joy & (PORT_A_KEY_1 | PORT_A_KEY_2))) {
 		if (y) {
 			y--;
-			SMS_setBGScrollY(224 - (y >> 2));
+			SMS_setBGScrollY(SCROLL_H - (y >> 2));
 		}
 		
 		joy = SMS_getKeysStatus();
@@ -368,7 +374,7 @@ void level_end(unsigned char x, unsigned char y) {
 	
 		if (phase == 2) {
 			prev_y[0] += 3;
-			if (prev_y[0] > (192 - 24)) {
+			if (prev_y[0] > (SCREEN_H - 24)) {
 				phase = 1;
 			}
 		} else {
@@ -393,8 +399,8 @@ void level_end(unsigned char x, unsigned char y) {
 }
 
 void main(void) {
-	unsigned char x = (256 - 24) >> 1;
-	unsigned char y = (192 - 28) * 2 / 3;
+	unsigned char x = (SCREEN_W - 24) >> 1;
+	unsigned char y = (SCREEN_H - 28) * 2 / 3;
 	unsigned char joy = 0;
 	unsigned char scroll_y = 0;
 	int tilt = 0;
@@ -434,7 +440,7 @@ void main(void) {
 		if (joy & PORT_A_KEY_UP) {
 			if (y) y -= 2;
 		} else if (joy & PORT_A_KEY_DOWN) {
-			if (y < (192 - 32)) y += 2;
+			if (y < (SCREEN_H - 32)) y += 2;
 		}
 		
 		if (joy & (PORT_A_KEY_1 | PORT_A_KEY_2)) {
