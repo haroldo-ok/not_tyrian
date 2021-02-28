@@ -53,10 +53,31 @@ void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsign
 	SMS_addSprite(x + 16, y, base_tile + 4);
 }
 
-void initialize() {
+void draw_tile(unsigned char x, unsigned char y, unsigned int base_tile) {
+	unsigned int tiles[4];
+	int n = base_tile;
+	
+	tiles[0] = n++;
+	tiles[1] = n++;
+	tiles[2] = n++;
+	tiles[3] = n++;
+	
+	SMS_loadTileMapArea(x, y, tiles, 2, 2);
+}
+
+void draw_tiles() {
+	for (char i = 0; i != 16; i++) {
+		for (char j = 0; j != 14; j++) {
+			draw_tile(i << 1, j << 1, 256);
+		}
+	}
+}
+
+void initialize_gameplay() {	
 	SMS_useFirstHalfTilesforSprites(true);
 	SMS_setSpriteMode(SPRITEMODE_TALL);
 
+	SMS_displayOff();
 	SMS_setBGPaletteColor(0, 0x04);	
 	SMS_loadSpritePalette(player__palette__bin);
 	SMS_loadBGPalette(tileset__palette__bin);
@@ -66,6 +87,9 @@ void initialize() {
 	SMS_loadPSGaidencompressedTiles(shot__tiles__psgcompr, 224);
 	SMS_loadPSGaidencompressedTiles(tileset__tiles__psgcompr, 256);
 	SMS_setClippingWindow(0, 0, 255, 192);
+
+	draw_tiles();
+
 	SMS_displayOn();
 }
 
@@ -222,26 +246,6 @@ void fire_shot(unsigned char x, int y) {
 	}
 }
 
-void draw_tile(unsigned char x, unsigned char y, unsigned int base_tile) {
-	unsigned int tiles[4];
-	int n = base_tile;
-	
-	tiles[0] = n++;
-	tiles[1] = n++;
-	tiles[2] = n++;
-	tiles[3] = n++;
-	
-	SMS_loadTileMapArea(x, y, tiles, 2, 2);
-}
-
-void draw_tiles() {
-	for (char i = 0; i != 16; i++) {
-		for (char j = 0; j != 14; j++) {
-			draw_tile(i << 1, j << 1, 256);
-		}
-	}
-}
-
 void main(void) {
 	unsigned char y = 160;
 	unsigned char x = 0;
@@ -249,8 +253,7 @@ void main(void) {
 	unsigned char scroll_y = 0;
 	int tilt = 0;
 	
-	initialize();
-	draw_tiles();
+	initialize_gameplay();
 
 	clear_enemies();
 	clear_shots();
