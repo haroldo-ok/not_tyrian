@@ -41,6 +41,8 @@ struct wave {
 shot shots[6];
 char shot_delay;
 
+bool boss_mode;
+
 void draw_ship(unsigned char x, unsigned char y, unsigned char base_tile, unsigned char line_incr) {
 	SMS_addSprite(x, y, base_tile);
 	SMS_addSprite(x + 8, y, base_tile + 2);
@@ -79,6 +81,9 @@ void initialize_gameplay() {
 
 	SMS_displayOff();
 	
+	SMS_setBGScrollX(0);
+	SMS_setBGScrollY(0);
+	
 	SMS_loadPSGaidencompressedTiles(player__tiles__psgcompr, 2);
 	SMS_loadPSGaidencompressedTiles(u_fighter__tiles__psgcompr, 64);
 	SMS_loadPSGaidencompressedTiles(enemy__tiles__psgcompr, 160);
@@ -93,6 +98,31 @@ void initialize_gameplay() {
 	SMS_loadBGPalette(tileset__palette__bin);
 
 	SMS_displayOn();
+	
+	boss_mode = false;
+}
+
+void initialize_boss() {
+	unsigned int row[32];	
+	unsigned int *o = boss__tilemap__bin;	
+	
+	SMS_zeroBGPalette();
+	SMS_loadPSGaidencompressedTiles(boss__tiles__psgcompr, 256);
+	
+	for (unsigned char y = 0; y != 28; y++) {
+		unsigned int *d = row;
+		for (unsigned char x = 0; x != 32; x++) {
+			*d = *o + 256;
+			SMS_loadTileMap(0, y, row, 64);
+			o++; d++;
+		}		
+	}
+
+	SMS_setBGScrollX(0);
+	SMS_setBGScrollY(0);
+	SMS_loadBGPalette(boss__palette__bin);
+	
+	boss_mode = true;
 }
 
 void clear_enemies() {
@@ -249,7 +279,7 @@ void fire_shot(unsigned char x, int y) {
 }
 
 void title_screen() {
-	unsigned char joy;
+	unsigned char joy = 0;
 	int y = 24 << 2;
 	
 	SMS_displayOff();
@@ -281,6 +311,7 @@ void main(void) {
 	title_screen();
 	
 	initialize_gameplay();
+	initialize_boss();
 
 	clear_enemies();
 	clear_shots();
@@ -327,7 +358,10 @@ void main(void) {
 
 		SMS_waitForVBlank();
 		SMS_copySpritestoSAT();
-		SMS_setBGScrollY(scroll_y);
+		
+		if (!boss_mode) {
+			SMS_setBGScrollY(scroll_y);
+		}
 	}
 
 }
