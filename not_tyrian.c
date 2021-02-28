@@ -78,6 +78,7 @@ void initialize_gameplay() {
 	SMS_setSpriteMode(SPRITEMODE_TALL);
 
 	SMS_displayOff();
+	
 	SMS_setBGPaletteColor(0, 0x04);	
 	SMS_loadSpritePalette(player__palette__bin);
 	SMS_loadBGPalette(tileset__palette__bin);
@@ -246,12 +247,37 @@ void fire_shot(unsigned char x, int y) {
 	}
 }
 
+void title_screen() {
+	unsigned char joy;
+	int y = 24 << 2;
+	
+	SMS_displayOff();
+	
+	SMS_loadBGPalette(title__palette__bin);
+	SMS_loadPSGaidencompressedTiles(title__tiles__psgcompr, 0);
+	SMS_loadTileMap(0, 0, title__tilemap__bin, title__tilemap__bin_size);
+	
+	SMS_displayOn();
+
+	while (!(joy & (PORT_A_KEY_1 | PORT_A_KEY_2))) {
+		if (y) {
+			y--;
+			SMS_setBGScrollY(224 - (y >> 2));
+		}
+		
+		joy = SMS_getKeysStatus();
+		SMS_waitForVBlank();
+	}
+}
+
 void main(void) {
 	unsigned char y = 160;
 	unsigned char x = 0;
 	unsigned char joy = 0;
 	unsigned char scroll_y = 0;
 	int tilt = 0;
+	
+	title_screen();
 	
 	initialize_gameplay();
 
